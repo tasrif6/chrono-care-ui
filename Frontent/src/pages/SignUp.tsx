@@ -44,10 +44,39 @@ const SignUp = () => {
 
   const dateOfBirth = watch('dateOfBirth');
 
-  const onSubmit = (data: SignUpFormData) => {
-    console.log('Sign Up Data:', data);
+const onSubmit = async (data: SignUpFormData) => {
+  try {
+    // Convert Date object to ISO string for backend
+    const payload = {
+      ...data,
+      dateOfBirth: data.dateOfBirth ? data.dateOfBirth.toISOString().split('T')[0] : null
+    };
+    
+    const response = await fetch('http://127.0.0.1:8000/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      credentials: 'omit',  // Change this to 'omit' for now
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      toast.error(error.detail || 'Registration failed!');
+      return;
+    }
+
+    const result = await response.json();
     toast.success('Registration successful!');
-  };
+    console.log('Registered:', result);
+
+  } catch (error) {
+    console.error(error);
+    toast.error('Server error!');
+  }
+};
 
   const handleRoleChange = (role: 'patient' | 'doctor' | 'admin') => {
     setSelectedRole(role);
