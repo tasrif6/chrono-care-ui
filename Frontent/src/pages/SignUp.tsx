@@ -80,7 +80,7 @@ const onSubmit = async (data: SignUpFormData) => {
 
   const handleRoleChange = (role: 'patient' | 'doctor' | 'admin') => {
     setSelectedRole(role);
-    setValue('role', role);
+    setValue('role', role);   
   };
 
   return (

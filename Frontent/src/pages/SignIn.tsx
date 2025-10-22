@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const signInSchema = z.object({
   email: z.string().trim().email('Invalid email address'),
@@ -29,10 +30,41 @@ const SignIn = () => {
     resolver: zodResolver(signInSchema),
   });
 
-  const onSubmit = (data: SignInFormData) => {
-    console.log('Sign In Data:', data);
-    toast.success('Sign in successful!');
+  const onSubmit = async (data: SignInFormData) => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) throw new Error("Invalid credentials");
+
+      const result = await response.json();
+        console.log("Login result:", result);
+      // Save token in localStorage
+      localStorage.setItem("token", result.access_token);
+
+      // Redirect based on role
+      switch (result.role) {
+        case "admin":
+          navigate("/admindashboard");
+          break;
+        case "doctor":
+          navigate("/doctordashboard");
+          break;
+        default:
+          navigate("/patientdashboard");
+      }
+
+      toast.success("Sign in successful!");
+    } catch (err) {
+      toast.error("Invalid email or password");
+      console.error(err);
+    }
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex flex-col gradient-hero">
